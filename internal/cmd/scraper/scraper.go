@@ -167,24 +167,13 @@ func RunWithEmitters(cfg *Config, emitters []integration.Emitter) error {
 		)
 	}
 
-	go integration.Execute(
+	integration.Execute(
 		scrapeDuration,
 		selfRetriever,
 		retrievers,
 		integration.NewFetcher(scrapeDuration, cfg.ScrapeTimeout, cfg.WorkerThreads, cfg.BearerTokenFile, cfg.CaFile, cfg.InsecureSkipVerify, queueLength),
 		integration.RuleProcessor(processingRules, queueLength),
 		emitters)
-
-	r := http.NewServeMux()
-	r.Handle("/metrics", promhttp.Handler())
-	if cfg.Debug {
-		r.HandleFunc("/debug/pprof/", pprof.Index)
-		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-		r.HandleFunc("/debug/pprof/profile", pprof.Profile)
-		r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-		r.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	}
-	return http.ListenAndServe(":8080", r)
 }
 
 // RunOnceWithEmitters runs the scraper with preselected emitters once.
